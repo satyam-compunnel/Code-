@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repository Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5"> 
+        <h1 class="text-center mb-4">GitHub Repository Manager</h1>
+
+        <div class="row justify-content-center">
+            <div class="col-md-6"> 
+                <form id="tokenForm" method="POST" class="card p-3 mb-3">
+                    <div class="form-group">
+                        <label for="github_token">GitHub Access Token:</label>
+                        <input type="password" class="form-control" id="github_token" name="github_token" required placeholder="Enter your GitHub token">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Set Token</button>
+                </form>
+
+                {% if token_set %}
+                <div id="app">
+                    <div class="form-group">
+                        <label for="organization">Select Organization:</label>
+                        <select id="organization" class="form-control">
+                            <option value="">Select an organization</option>
+                        </select>
+                    </div>
+
+                    <div id="actionButtons" class="btn-group d-flex" style="display: none;"> 
+                        <button id="createRepoBtn" class="btn btn-success flex-grow-1 mr-2">Create New Repository</button>
+                        <button id="managePermissionsBtn" class="btn btn-info flex-grow-1">Manage Permissions</button>
+                    </div>
+
+                    <div id="createRepoSection" class="card p-3 mt-3" style="display: none;">
+                        <h2 class="text-primary">Create New Repository</h2>
+                        <form id="createRepoForm">
+                            <div class="form-group">
+                                <label for="repo_name">Repository Name:</label>
+                                <input type="text" class="form-control" id="repo_name" name="repo_description">
+                                <label for="description">Description:</label>
+                                <input type="text" class="form-control" id="description" name="description" placeholder="Enter repository description">
+                            </div>
+
+                            <button type="button" id="addCollaboratorBtn" class="btn btn-secondary mb-2">Add Collaborator</button>
+
+                            <div id="collaboratorsSection"></div> 
+
+                            <button type="submit" class="btn btn-primary">Create Repository</button>
+                        </form>
+                    </div>
+
+                    <div id="managePermissionsSection" class="card p-3 mt-3" style="display: none;">
+                        <h2 class="text-primary">Manage Permissions</h2>
+                        <form id="managePermissionsForm">
+                            <div class="form-group">
+                                <label for="repo_select">Select Repository:</label>
+                                <select id="repo_select" class="form-control">
+                                    <option value="">Select a repository</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="user">Collaborator Username:</label>
+                                <input type="text" class="form-control" id="user" name="user" required placeholder="Enter GitHub username">
+                                <label for="permission">Permission Level:</label>
+                                <select id="permission" name="permission" class="form-control" required>
+                                    <option value="read">Read</option>
+                                    <option value="write">Write</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Permissions</button>
+                        </form>
+
+                        <div id="collaboratorsList" class="mt-3" style="display: none;">
+                            <h3>Collaborators:</h3>
+                            <ul id="collaboratorItems" class="list-group"></ul> 
+                        </div>
+                    </div>
+
+                    <!-- ✅ Create Organization Section -->
+                    <div id="createOrgSection" class="card p-3 mt-3">
+                        <h2 class="text-warning">Create New Organization</h2>
+                        <form id="createOrgForm">
+                            <div class="form-group">
+                                <label for="enterprise_slug">Enterprise Slug:</label>
+                                <input type="text" class="form-control" id="enterprise_slug" name="enterprise_slug" required placeholder="e.g. my-enterprise">
+                            </div>
+                            <div class="form-group">
+                                <label for="org_login">Organization Login (name):</label>
+                                <input type="text" class="form-control" id="org_login" name="org_login" required placeholder="e.g. new-org-name">
+                            </div>
+                            <div class="form-group">
+                                <label for="admin_username">Admin Username:</label>
+                                <input type="text" class="form-control" id="admin_username" name="admin_username" required placeholder="GitHub username of org admin">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile_name">Organization Display Name:</label>
+                                <input type="text" class="form-control" id="profile_name" name="profile_name" placeholder="Optional display name">
+                            </div>
+                            <button type="submit" class="btn btn-warning">Create Organization</button>
+                            <div id="orgCreationMessage" class="mt-3 text-danger" style="display: none;"></div>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div> 
+        </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script> 
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
