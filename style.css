@@ -114,3 +114,18 @@ h2 {
 #orgCreationMessage {
     font-weight: bold;
 }
+
+/* ✅ Styling for Create Team Section */
+#createTeamSection {
+    background-color: #e8f5e9;
+    border: 1px solid #81c784;
+}
+
+#createTeamSection h2 {
+    color: #388e3c;
+}
+
+#teamCreationMessage {
+    font-weight: bold;
+    color: #d32f2f;
+}
