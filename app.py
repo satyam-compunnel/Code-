@@ -165,7 +165,6 @@ def get_collaborators(org, repo):
 
     return jsonify(all_collaborators)
 
-# ✅ Create Organization Route
 @app.route('/create-organization', methods=['POST'])
 def create_organization():
     data = request.json
@@ -190,6 +189,63 @@ def create_organization():
         return jsonify({'status': 404, 'message': 'Enterprise slug not found or inaccessible.'})
     else:
         return jsonify({'status': response.status_code, 'message': response.json()})
+
+# ✅ Create Team Route
+@app.route('/create-team', methods=['POST'])
+def create_team():
+    data = request.json
+    if not github_token:
+        return jsonify({'status': 401, 'message': 'Unauthorized'}), 401
+
+    headers = {'Authorization': f'token {github_token}'}
+
+    org = data['org']
+    user_resp = requests.get(f'{GITHUB_API_URL}/user', headers=headers)
+    if user_resp.status_code != 200:
+        return jsonify({'status': 403, 'message': 'Unable to verify user identity'})
+
+    username = user_resp.json().get('login')
+    role_resp = requests.get(f'{GITHUB_API_URL}/orgs/{org}/memberships/{username}', headers=headers)
+    if role_resp.status_code != 200 or role_resp.json().get('role') != 'admin':
+        return jsonify({'status': 403, 'message': 'User is not an admin of the organization'})
+
+    team_payload = {
+        'name': data['team_name'],
+        'description': data.get('description', ''),
+        'privacy': 'closed'
+    }
+    team_resp = requests.post(f'{GITHUB_API_URL}/orgs/{org}/teams', json=team_payload, headers=headers)
+    if team_resp.status_code != 201:
+        return jsonify({'status': team_resp.status_code, 'message': 'Failed to create team', 'details': team_resp.json()})
+
+    team_slug = team_resp.json().get('slug')
+
+    added_members = []
+    failed_members = []
+
+    for member in data.get('members', []):
+        member_username = member['github_id']
+        member_username = member['github_id']
+        membership_check = requests.get(f'{GITHUB_API_URL}/orgs/{org}/memberships/{member_username}', headers=headers)
+        if membership_check.status_code == 200:
+            add_resp = requests.put(
+                f'{GITHUB_API_URL}/orgs/{org}/teams/{team_slug}/memberships/{member_username}',
+                headers=headers
+            )
+            if add_resp.status_code in [200, 201]:
+                added_members.append(member_username)
+            else:
+                failed_members.append({'username': member_username, 'error': add_resp.json()})
+        else:
+            failed_members.append({'username': member_username, 'error': 'Not part of organization'})
+
+    return jsonify({
+        'status': 201,
+        'message': 'Team created successfully',
+        'team': team_slug,
+        'added_members': added_members,
+        'failed_members': failed_members
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
