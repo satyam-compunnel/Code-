@@ -135,6 +135,59 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.textContent = 'Unexpected error: ' + error.message;
         });
     });
+
+    // ✅ Create Team Form Submission
+    document.getElementById('createTeamForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const org = document.getElementById('organization').value;
+        const team_name = document.getElementById('team_name').value;
+        const description = document.getElementById('team_description').value;
+
+        const memberInputs = document.querySelectorAll('#teamMembersSection input[name="github_id"]');
+        const members = Array.from(memberInputs)
+            .map(input => input.value.trim())
+            .filter(username => username.length > 0)
+            .map(username => ({ github_id: username }));
+
+        fetch('/create-team', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ org, team_name, description, members })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const messageDiv = document.getElementById('teamCreationMessage');
+            messageDiv.style.display = 'block';
+            if (data.status === 201) {
+                messageDiv.classList.remove('text-danger');
+                messageDiv.classList.add('text-success');
+                messageDiv.textContent = 'Team created successfully!';
+            } else {
+                messageDiv.classList.remove('text-success');
+                messageDiv.classList.add('text-danger');
+                messageDiv.textContent = 'Error: ' + (data.message || 'Unknown error');
+            }
+        })
+        .catch(error => {
+            const messageDiv = document.getElementById('teamCreationMessage');
+            messageDiv.style.display = 'block';
+            messageDiv.classList.add('text-danger');
+            messageDiv.textContent = 'Unexpected error: ' + error.message;
+        });
+    });
+
+    // ✅ Add Team Member Input Field
+    document.getElementById('addTeamMemberBtn').addEventListener('click', function () {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'github_id';
+        input.className = 'form-control mb-2';
+        input.placeholder = 'GitHub username';
+        document.getElementById('teamMembersSection').appendChild(input);
+    });
 });
 
 function fetchOrganizations() {
@@ -190,6 +243,7 @@ function fetchCollaborators(repo) {
                     }
 
                     listItem.textContent = `${collaborator.login} (${collaborator.type}) - ${permission}`; 
+                    collaboratorItems.appendChild(listItem);                  listItem.textContent = `${collaborator.login} (${collaborator.type}) - ${permission}`; 
                     collaboratorItems.appendChild(listItem);
                 });
                 document.getElementById('collaboratorsList').style.display = 'block';
